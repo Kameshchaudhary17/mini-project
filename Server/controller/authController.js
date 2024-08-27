@@ -4,7 +4,8 @@ import jwt from'jsonwebtoken';
 import User from '../models/user.js';
 
 export const register = async (req, res) => {
-  const { name, email, password, confirmPassword, address, contact, role, photo } = req.body;
+  const { name, email, password, confirmPassword, address, contact, role } = req.body;
+  const photo = req.file ? req.file.filename : null; // Handle file upload
 
   if (password !== confirmPassword) {
     return res.status(400).json({ error: "Passwords do not match" });
@@ -25,7 +26,7 @@ export const register = async (req, res) => {
       address,
       contact,
       role,
-      photo,
+      photo, // Save the file name in the database
     });
 
     const token = jwt.sign({ id: newUser.id, role: newUser.role }, 'yourSecretKey', { expiresIn: '1h' });
@@ -36,6 +37,7 @@ export const register = async (req, res) => {
     return res.status(500).json({ error: "Server error" });
   }
 };
+
 
 export const login = async (req, res) => {
   const { email, password } = req.body;
