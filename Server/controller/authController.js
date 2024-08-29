@@ -57,10 +57,16 @@ export const login = async (req, res) => {
 
     const token = jwt.sign({ id: user.id, role: user.role }, 'yourSecretKey', { expiresIn: '1h' });
 
-    return res.status(200).json({ token, user });
+    // Set the token as a cookie
+    res.cookie('token', token, {
+      httpOnly: true, // Ensures the cookie is sent only via HTTP(S) and not accessible to client-side JavaScript
+      secure: process.env.NODE_ENV === 'production', // Ensures the cookie is sent over HTTPS only in production
+      maxAge: 3600000, // 1 hour
+    });
+
+    return res.status(200).json({ user });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: "Server error" });
   }
 };
-
