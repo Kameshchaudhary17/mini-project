@@ -4,6 +4,8 @@ import authRoutes from './routes/authRoutes.js';
 import cors from 'cors';
 import sequelize from './db.js';
 import cookieParser from 'cookie-parser';
+import handleRoutes from './routes/handleRoutes.js';
+
 
 
 
@@ -27,6 +29,8 @@ app.use(cors({
 app.use(express.json());
 
 app.use('/', authRoutes)
+app.use('/', handleRoutes)
+
 
 
 
