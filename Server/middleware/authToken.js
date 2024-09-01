@@ -1,32 +1,35 @@
 import jwt from 'jsonwebtoken';
+import User from '../models/User.js';
 
-// Environment variable for JWT secret key
-const JWT_SECRET = process.env.JWT_SECRET || 'yourSecretKey';
+const secretKey = process.env.JWT_SECRET_KEY;
 
-export const authenticateToken = (req, res, next) => {
-  const token = req.headers['authorization']?.split(' ')[1]; // Bearer <token>
+export const authenticateUser = async (req, res, next) => {
+  try {
+    const token = req.cookies.token || req.header('Authorization')?.replace('Bearer ', '');
 
-  if (!token) {
-    return res.status(401).json({ message: 'Token is missing or invalid' });
-  }
-
-  jwt.verify(token, JWT_SECRET, (err, user) => {
-    if (err) {
-      return res.status(403).json({ message: 'Token is not valid' });
+    if (!token) {
+      return res.status(401).json({ error: 'Authentication required' });
     }
 
-    req.user = user; // Attach user info to request object
+    const decoded = jwt.verify(token, secretKey);
+    const user = await User.findByPk(decoded.id);
+
+    if (!user) {
+      return res.status(401).json({ error: 'User not found' });
+    }
+
+    req.user = user;
     next();
-  });
+  } catch (error) {
+    console.error('Authentication error:', error);
+    res.status(401).json({ error: 'Invalid token' });
+  }
 };
 
-
-export const authorizeRole = (roles) => (req, res, next) => {
-    const userRole = req.user?.role;
-  
-    if (!roles.includes(userRole)) {
-      return res.status(403).json({ message: 'Access denied' });
-    }
-  
+export const authorizeAdmin = (req, res, next) => {
+  if (req.user && req.user.role === 'Admin') {
     next();
-  };
+  } else {
+    res.status(403).json({ error: 'Access denied. Admin only.' });
+  }
+};

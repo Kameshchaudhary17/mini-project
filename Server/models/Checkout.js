@@ -1,20 +1,15 @@
-import DataTypes from 'sequelize';
+import { DataTypes } from 'sequelize';
 import sequelize from '../db.js';
 import Resource from './Resource.js';
 
 const Checkout = sequelize.define('Checkout', {
   name: {
     type: DataTypes.STRING,
-    allowNull: false,
-  },
-  checkedOutAt: {
-    type: DataTypes.DATE,
-    allowNull: false,
-    defaultValue: DataTypes.NOW,
-  },
+    allowNull: false
+  }
 });
 
-Resource.hasOne(Checkout);
 Checkout.belongsTo(Resource);
+Resource.hasMany(Checkout);
 
 export default Checkout;

@@ -1,19 +1,19 @@
-import DataTypes from 'sequelize';
+import { DataTypes } from 'sequelize';
 import sequelize from '../db.js';
 
 const Resource = sequelize.define('Resource', {
   name: {
     type: DataTypes.STRING,
-    allowNull: false,
+    allowNull: false
   },
-  photoUrl: {
+  photo: {
     type: DataTypes.STRING,
-    allowNull: false,
+    allowNull: true
   },
   isAvailable: {
     type: DataTypes.BOOLEAN,
-    defaultValue: true,
-  },
+    defaultValue: true
+  }
 });
 
 export default Resource;
