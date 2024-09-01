@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
-import User from '../models/User.js';
+import User from '../models/user.js';
 
-const secretKey = process.env.JWT_SECRET_KEY;
+const secretKey = process.env.JWT_SECRET_KEY || 'fallback_secret_key_12345';
 
 export const authenticateUser = async (req, res, next) => {
   try {
@@ -27,9 +27,17 @@ export const authenticateUser = async (req, res, next) => {
 };
 
 export const authorizeAdmin = (req, res, next) => {
-  if (req.user && req.user.role === 'Admin') {
+  if (req.user && req.user.role === 'admin') {
     next();
   } else {
-    res.status(403).json({ error: 'Access denied. Admin only.' });
+    res.status(403).json({ error: 'Access denied. Admins only.' });
+  }
+};
+
+export const authorizeUser = (req, res, next) => {
+  if (req.user) {
+    next();
+  } else {
+    res.status(403).json({ error: 'Access denied. Users only.' });
   }
 };

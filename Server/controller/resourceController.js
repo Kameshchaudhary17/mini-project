@@ -1,3 +1,4 @@
+// controllers/resourceController.js
 import Resource from '../models/Resource.js';
 import Checkout from '../models/Checkout.js';
 
@@ -5,6 +6,8 @@ export const addResource = async (req, res) => {
   if (req.user.role !== 'Admin') {
     return res.status(403).json({ error: 'Access denied. Admins only.' });
   }
+
+  console.log('Email:', req.user.email); // Check if email is available here
 
   try {
     const { name } = req.body;
@@ -23,12 +26,14 @@ export const addResource = async (req, res) => {
   }
 };
 
-export const checkoutResource = async (req, res) => {
-  if (req.user.role !== 'Admin') {
-    return res.status(403).json({ error: 'Access denied. Admins only.' });
-  }
 
+
+export const checkoutResource = async (req, res) => {
   try {
+    if (req.user.role.toLowerCase() !== 'admin') {
+      return res.status(403).json({ error: 'Access denied. Admins only.' });
+    }
+
     const { id } = req.params;
     const { name } = req.body;
 
@@ -58,11 +63,11 @@ export const checkoutResource = async (req, res) => {
 };
 
 export const returnResource = async (req, res) => {
-  if (req.user.role !== 'Admin') {
-    return res.status(403).json({ error: 'Access denied. Admins only.' });
-  }
-
   try {
+    if (req.user.role.toLowerCase() !== 'admin') {
+      return res.status(403).json({ error: 'Access denied. Admins only.' });
+    }
+
     const { id } = req.params;
 
     const resource = await Resource.findByPk(id);

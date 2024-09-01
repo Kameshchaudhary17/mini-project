@@ -5,7 +5,14 @@ import User from '../models/user.js';
 
 dotenv.config();
 
-const secretKey = process.env.JWT_SECRET_KEY;
+// Provide a fallback secret key if the environment variable is not set
+const secretKey = process.env.JWT_SECRET_KEY || 'fallback_secret_key_12345';
+
+if (process.env.JWT_SECRET_KEY) {
+  console.log("Using JWT_SECRET_KEY from environment variables");
+} else {
+  console.warn("WARNING: JWT_SECRET_KEY is not set in the environment variables. Using fallback secret key. This is not recommended for production use.");
+}
 
 export const register = async (req, res) => {
   const { name, email, password, confirmPassword, address, contact, role } = req.body;
@@ -33,25 +40,21 @@ export const register = async (req, res) => {
       photo,
     });
 
-    if (!secretKey) {
-      console.error("JWT_SECRET_KEY is not set in the environment variables");
-      return res.status(500).json({ error: "Server configuration error" });
-    }
-
     const token = jwt.sign(
-      { id: newUser.id, role: newUser.role }, 
-      secretKey, 
+      { id: newUser.id, role: newUser.role },
+      secretKey,
       { expiresIn: '1h' }
     );
 
-    // Remove password from the user object before sending it in the response
     const userWithoutPassword = { ...newUser.toJSON() };
     delete userWithoutPassword.password;
 
-    return res.status(201).json({ 
-      message: "User registered successfully",
-      token, 
-      user: userWithoutPassword 
+    let message = role === "admin" ? "Admin registered successfully" : "User registered successfully";
+
+    return res.status(201).json({
+      message,
+      token,
+      user: userWithoutPassword
     });
   } catch (err) {
     console.error(err);
@@ -75,18 +78,12 @@ export const login = async (req, res) => {
       return res.status(400).json({ error: "Invalid credentials" });
     }
 
-    if (!secretKey) {
-      console.error("JWT_SECRET_KEY is not set in the environment variables");
-      return res.status(500).json({ error: "Server configuration error" });
-    }
-
     const token = jwt.sign(
-      { id: user.id, role: user.role }, 
-      secretKey, 
+      { id: user.id, role: user.role },
+      secretKey,
       { expiresIn: '1h' }
     );
 
-    // Remove password from the user object before sending it in the response
     const userWithoutPassword = { ...user.toJSON() };
     delete userWithoutPassword.password;
 
@@ -96,9 +93,14 @@ export const login = async (req, res) => {
       maxAge: 3600000, // 1 hour
     });
 
-    return res.status(200).json({ 
-      message: "Logged in successfully",
-      user: userWithoutPassword 
+    // Make role comparison case-insensitive
+    let message = user.role.toLowerCase() === "admin" 
+      ? "Admin login successful: Welcome, administrator!" 
+      : "User login successful: Welcome back!";
+
+    return res.status(200).json({
+      message,
+      user: userWithoutPassword
     });
   } catch (err) {
     console.error(err);
