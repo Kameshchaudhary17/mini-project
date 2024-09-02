@@ -1,8 +1,13 @@
 // models/User.js
-import DataTypes from 'sequelize'
-import sequelize from '../db.js'; // Your Sequelize connection
+import { DataTypes } from 'sequelize';
+import sequelize from '../db.js';
 
 const User = sequelize.define('User', {
+  id: {
+    type: DataTypes.INTEGER,
+    autoIncrement: true,
+    primaryKey: true,
+  },
   name: {
     type: DataTypes.STRING,
     allowNull: false,
@@ -18,20 +23,21 @@ const User = sequelize.define('User', {
   },
   address: {
     type: DataTypes.STRING,
-    allowNull: false,
   },
   contact: {
     type: DataTypes.STRING,
-    allowNull: false,
   },
-    role: {
-      type: DataTypes.STRING,
-      allowNull: false,
+  role: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    defaultValue: 'User', // Default role is 'User'
   },
   photo: {
     type: DataTypes.STRING,
-    allowNull: true,
-  }
+  },
+}, {
+  timestamps: true,
+  paranoid: true, // Enables soft deletion
 });
 
 export default User;

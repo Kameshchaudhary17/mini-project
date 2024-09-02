@@ -1,11 +1,11 @@
+// authController.js
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
-import User from '../models/user.js';
+import User from '../models/User.js';
 
 dotenv.config();
 
-// Provide a fallback secret key if the environment variable is not set
 const secretKey = process.env.JWT_SECRET_KEY || 'fallback_secret_key_12345';
 
 if (process.env.JWT_SECRET_KEY) {
@@ -13,6 +13,9 @@ if (process.env.JWT_SECRET_KEY) {
 } else {
   console.warn("WARNING: JWT_SECRET_KEY is not set in the environment variables. Using fallback secret key. This is not recommended for production use.");
 }
+
+const PASSWORD_MIN_LENGTH = 8;
+const PASSWORD_COMPLEXITY_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/;
 
 export const register = async (req, res) => {
   const { name, email, password, confirmPassword, address, contact, role } = req.body;
@@ -22,6 +25,10 @@ export const register = async (req, res) => {
     return res.status(400).json({ error: "Passwords do not match" });
   }
 
+  if (password.length < PASSWORD_MIN_LENGTH || !PASSWORD_COMPLEXITY_REGEX.test(password)) {
+    return res.status(400).json({ error: `Password must be at least ${PASSWORD_MIN_LENGTH} characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character` });
+  }
+
   try {
     const existingUser = await User.findOne({ where: { email } });
     if (existingUser) {
@@ -29,7 +36,6 @@ export const register = async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-
     const newUser = await User.create({
       name,
       email,
@@ -49,16 +55,15 @@ export const register = async (req, res) => {
     const userWithoutPassword = { ...newUser.toJSON() };
     delete userWithoutPassword.password;
 
-    let message = role === "admin" ? "Admin registered successfully" : "User registered successfully";
-
+    let message = role.toLowerCase() === "admin" ? "Admin registered successfully" : "User registered successfully";
     return res.status(201).json({
       message,
       token,
-      user: userWithoutPassword
+      user: userWithoutPassword,
     });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ error: "Server error" });
+    return res.status(500).json({ error: err.message || "Server error" });
   }
 };
 
@@ -73,7 +78,6 @@ export const login = async (req, res) => {
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
-
     if (!isMatch) {
       return res.status(400).json({ error: "Invalid credentials" });
     }
@@ -93,17 +97,16 @@ export const login = async (req, res) => {
       maxAge: 3600000, // 1 hour
     });
 
-    // Make role comparison case-insensitive
-    let message = user.role.toLowerCase() === "admin" 
-      ? "Admin login successful: Welcome, administrator!" 
+    let message = user.role.toLowerCase() === "admin"
+      ? "Admin login successful: Welcome, administrator!"
       : "User login successful: Welcome back!";
 
     return res.status(200).json({
       message,
-      user: userWithoutPassword
+      user: userWithoutPassword,
     });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ error: "Server error" });
+    return res.status(500).json({ error: err.message || "Server error" });
   }
 };

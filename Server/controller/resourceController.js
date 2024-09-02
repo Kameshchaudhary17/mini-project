@@ -3,11 +3,9 @@ import Resource from '../models/Resource.js';
 import Checkout from '../models/Checkout.js';
 
 export const addResource = async (req, res) => {
-  if (req.user.role !== 'Admin') {
+  if (req.user.role.toLowerCase() !== 'admin') {
     return res.status(403).json({ error: 'Access denied. Admins only.' });
   }
-
-  console.log('Email:', req.user.email); // Check if email is available here
 
   try {
     const { name } = req.body;
@@ -17,6 +15,7 @@ export const addResource = async (req, res) => {
       name,
       photo,
       isAvailable: true,
+      createdBy: req.user.id, // Associate the resource with the current admin
     });
 
     res.status(201).json(newResource);
@@ -25,8 +24,6 @@ export const addResource = async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 };
-
-
 
 export const checkoutResource = async (req, res) => {
   try {
