@@ -1,12 +1,7 @@
-// controllers/resourceController.js
 import Resource from '../models/Resource.js';
 import Checkout from '../models/Checkout.js';
 
 export const addResource = async (req, res) => {
-  if (req.user.role.toLowerCase() !== 'admin') {
-    return res.status(403).json({ error: 'Access denied. Admins only.' });
-  }
-
   try {
     const { name } = req.body;
     const photo = req.file ? req.file.filename : null;
@@ -34,6 +29,10 @@ export const checkoutResource = async (req, res) => {
     const { id } = req.params;
     const { name } = req.body;
 
+    if (!name) {
+      return res.status(400).json({ error: 'Name is required to checkout the resource.' });
+    }
+
     const resource = await Resource.findByPk(id);
 
     if (!resource) {
@@ -54,17 +53,14 @@ export const checkoutResource = async (req, res) => {
 
     res.status(200).json({ resource, checkout });
   } catch (err) {
-    console.error(err);
+    console.error('Checkout Resource Error:', err);
     res.status(500).json({ error: 'Server error' });
   }
 };
 
+
 export const returnResource = async (req, res) => {
   try {
-    if (req.user.role.toLowerCase() !== 'admin') {
-      return res.status(403).json({ error: 'Access denied. Admins only.' });
-    }
-
     const { id } = req.params;
 
     const resource = await Resource.findByPk(id);

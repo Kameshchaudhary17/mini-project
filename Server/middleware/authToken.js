@@ -18,7 +18,7 @@ export const authenticateUser = async (req, res, next) => {
       return res.status(401).json({ error: 'User not found' });
     }
 
-    req.user = user;
+    req.user = user; // Attach the user object to the request
     next();
   } catch (error) {
     console.error('Authentication error:', error);
@@ -27,17 +27,9 @@ export const authenticateUser = async (req, res, next) => {
 };
 
 export const authorizeAdmin = (req, res, next) => {
-  if (req.user && req.user.role === 'admin') {
+  if (req.user && req.user.role.toLowerCase() === 'admin') {
     next();
   } else {
     res.status(403).json({ error: 'Access denied. Admins only.' });
-  }
-};
-
-export const authorizeUser = (req, res, next) => {
-  if (req.user) {
-    next();
-  } else {
-    res.status(403).json({ error: 'Access denied. Users only.' });
   }
 };

@@ -35,9 +35,6 @@ const User = sequelize.define('User', {
   photo: {
     type: DataTypes.STRING,
   },
-}, {
-  timestamps: true,
-  paranoid: true, // Enables soft deletion
 });
 
 export default User;

@@ -1,7 +1,7 @@
 // models/Resource.js
 import { DataTypes } from 'sequelize';
 import sequelize from '../db.js';
-import User from '../models/user.js';
+import User from './user.js';
 
 const Resource = sequelize.define('Resource', {
   id: {
@@ -29,11 +29,10 @@ const Resource = sequelize.define('Resource', {
     },
   },
 }, {
-  timestamps: true,
-  paranoid: true, // Enables soft deletion
+  timestamps: true, // Keeps track of createdAt and updatedAt
+  paranoid: false, // Disable soft deletes to avoid looking for deletedAt column
 });
 
-// Optional: Establishing the association
 User.hasMany(Resource, { foreignKey: 'createdBy' });
 Resource.belongsTo(User, { foreignKey: 'createdBy' });
 

@@ -23,7 +23,7 @@ const Checkout = sequelize.define('Checkout', {
   },
 }, {
   timestamps: true,
-  paranoid: true, // Enables soft deletion
+  paranoid: false, // Enables soft deletion
 });
 
 export default Checkout;
