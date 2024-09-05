@@ -91,3 +91,55 @@ export const getResources = async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 };
+
+// Delete resource controller function
+export const deleteResource = async (req, res) => {
+  try {
+    if (req.user.role.toLowerCase() !== 'admin') {
+      return res.status(403).json({ error: 'Access denied. Admins only.' });
+    }
+
+    const { id } = req.params;
+    const resource = await Resource.findByPk(id);
+
+    if (!resource) {
+      return res.status(404).json({ error: 'Resource not found' });
+    }
+
+    await resource.destroy();
+    res.status(200).json({ message: 'Resource deleted successfully' });
+  } catch (err) {
+    console.error('Error deleting resource:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
+// Update resource controller function
+export const updateResource = async (req, res) => {
+  try {
+    if (req.user.role.toLowerCase() !== 'admin') {
+      return res.status(403).json({ error: 'Access denied. Admins only.' });
+    }
+
+    const { id } = req.params;
+    const { name } = req.body;
+    const photo = req.file ? req.file.filename : null;
+
+    const resource = await Resource.findByPk(id);
+
+    if (!resource) {
+      return res.status(404).json({ error: 'Resource not found' });
+    }
+
+    resource.name = name || resource.name;
+    if (photo) {
+      resource.photo = photo; // Update photo if a new one is provided
+    }
+
+    await resource.save();
+    res.status(200).json(resource);
+  } catch (err) {
+    console.error('Error updating resource:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
