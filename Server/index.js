@@ -5,6 +5,7 @@ import cors from 'cors';
 import sequelize from './db.js';
 import cookieParser from 'cookie-parser';
 import handleRoutes from './routes/handleRoutes.js';
+import profileRoutes from './routes/profileRoutes.js';
 
 
 
@@ -30,6 +31,7 @@ app.use(express.json());
 
 app.use('/', authRoutes)
 app.use('/', handleRoutes)
+app.use('/', profileRoutes)
 
 
 
