@@ -1,32 +1,32 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/user.js';
 
+// Use the same secret for signing and verifying
 const secretKey = process.env.JWT_SECRET_KEY || 'fallback_secret_key_12345';
 
-export const authenticateUser = async (req, res, next) => {
+export const authenticateUser = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+
+  // Check if Authorization header is present and starts with 'Bearer'
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Authentication required' });
+  }
+
+  // Extract the token from the header
+  const token = authHeader.split(' ')[1];
+
   try {
-    const token = req.cookies.token || req.header('Authorization')?.replace('Bearer ', '');
-
-    if (!token) {
-      return res.status(401).json({ error: 'Authentication required' });
-    }
-
-    const decoded = jwt.verify(token, secretKey);
-    const user = await User.findByPk(decoded.id);
-
-    if (!user) {
-      return res.status(401).json({ error: 'User not found' });
-    }
-
-    req.user = user; // Attach the user object to the request
-    next();
-  } catch (error) {
-    console.error('Authentication error:', error);
-    res.status(401).json({ error: 'Invalid token' });
+    // Verify the token using the correct secretKey
+    const decoded = jwt.verify(token, secretKey); // Use 'secretKey' here
+    req.user = decoded; // Attach decoded token payload to req.user
+    next(); // Proceed to next middleware or route handler
+  } catch (err) {
+    return res.status(401).json({ error: 'Invalid or expired token' });
   }
 };
 
 export const authorizeAdmin = (req, res, next) => {
+  // Check if the user has admin privileges
   if (req.user && req.user.role.toLowerCase() === 'admin') {
     next();
   } else {

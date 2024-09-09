@@ -7,7 +7,7 @@ const upload = multer({ storage : storage });
 const profileRoutes = express.Router();
 
 // Get profile
-profileRoutes.get('/profile', authenticateUser, getProfile);
+profileRoutes.get('/profile', getProfile);
 
 // Update profile
 profileRoutes.put('/profile/:id', authenticateUser, upload.single('photo'), updateProfile);
