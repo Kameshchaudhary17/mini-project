@@ -84,40 +84,17 @@ export const returnResource = async (req, res) => {
 
 export const getResources = async (req, res) => {
   try {
-    const { page = 1, limit = 10, available } = req.query;
-    const offset = (page - 1) * limit;
-
-    // Add filtering logic (optional)
-    const whereClause = available !== undefined ? { isAvailable: available } : {};
-
-    const resources = await Resource.findAndCountAll({
-      where: whereClause,
-      limit: parseInt(limit),
-      offset: parseInt(offset),
-      order: [['createdAt', 'DESC']], // Order by latest created resources
-    });
-
-    if (resources.count === 0) {
+    const resources = await Resource.findAll();
+    if (!resources.length) {
       return res.status(404).json({ message: 'No resources found' });
     }
 
-    res.status(200).json({
-      status: 'success',
-      total: resources.count,
-      pages: Math.ceil(resources.count / limit),
-      currentPage: parseInt(page),
-      data: resources.rows,
-    });
+    res.status(200).json(resources);
   } catch (err) {
     console.error('Error fetching resources:', err);
-    res.status(500).json({
-      status: 'error',
-      message: 'Failed to retrieve resources. Please try again later.',
-    });
+    res.status(500).json({ message: 'Failed to retrieve resources' });
   }
 };
-
-
 
 // Delete resource controller function
 export const deleteResource = async (req, res) => {
